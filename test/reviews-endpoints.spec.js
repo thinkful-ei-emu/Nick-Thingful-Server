@@ -24,6 +24,7 @@ describe('Reviews Endpoints', function() {
 
   afterEach('cleanup', () => helpers.cleanTables(db))
 
+  
   describe(`POST /api/reviews`, () => {
     beforeEach('insert things', () =>
       helpers.seedThingsTables(
@@ -46,6 +47,7 @@ describe('Reviews Endpoints', function() {
       return supertest(app)
         .post('/api/reviews')
         .send(newReview)
+        .set('Authorization', helpers.makeAuthHeader(testUser))
         .expect(201)
         .expect(res => {
           expect(res.body).to.have.property('id')
@@ -76,7 +78,7 @@ describe('Reviews Endpoints', function() {
         )
     })
 
-    const requiredFields = ['text', 'rating', 'user_id', 'thing_id']
+    const requiredFields = ['text', 'rating', 'thing_id']
 
     requiredFields.forEach(field => {
       const testThing = testThings[0]
@@ -84,7 +86,6 @@ describe('Reviews Endpoints', function() {
       const newReview = {
         text: 'Test new review',
         rating: 3,
-        user_id: testUser.id,
         thing_id: testThing.id,
       }
 
@@ -93,6 +94,7 @@ describe('Reviews Endpoints', function() {
 
         return supertest(app)
           .post('/api/reviews')
+          .set('Authorization', helpers.makeAuthHeader(testUser))
           .send(newReview)
           .expect(400, {
             error: `Missing '${field}' in request body`,
