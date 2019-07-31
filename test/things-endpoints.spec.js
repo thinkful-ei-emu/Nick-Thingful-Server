@@ -35,32 +35,27 @@ describe('Things Endpoints', function() {
       )
     )
     describe('Get api/things/:thing_id', () => {
-      it('Should respond with 401 Missing basic token when no basic', () => {
+      it('Should respond with 401 Missing bearer token when no bearer token', () => {
         return supertest(app)
         .get('/api/things/1')
-        .expect(401, {error: 'Missing basic token'})
+        .expect(401, {error: 'Missing bearer token'})
       })
-      it('Should respond with 401 "Unauthorized request" when no credintials in token', () => {
-        const noCreds = {user_name: '', password: '',}
+      it('Should respond with 401 "Unauthorized request" when invalid JWT secret', () => {
+        const validUser = testUsers[0];
+        const invalidSecret = 'bad-secret';
         return supertest(app)
         .get('/api/things/1')
-        .set('Authorization', helpers.makeAuthHeader(noCreds))
+        .set('Authorization', helpers.makeAuthHeader(validUser, invalidSecret))
         .expect(401, {error: 'Unauthorized request'})
       })
-      it('responds 401 "Unauthorized request" when invalid user', () => {
-        const invalid = {user_name: 'I dont', password: 'exist'};
+      it('responds 401 "Unauthorized request" when invalid sub in payload', () => {
+        const invalid = {user_name: 'I dont exist', id: 1};
         return supertest(app)
         .get('/api/things/1')
         .set('Authorization', helpers.makeAuthHeader(invalid))
         .expect(401, {error: 'Unauthorized request'})
       })
-      it('responds 401 "Unauthorized request" when invalid password', () => {
-        const invalid = {user_name: testUsers[0], password:'wrong'};
-        return supertest(app)
-        .get('/api/things/1')
-        .set('Authorization', helpers.makeAuthHeader(invalid))
-        .expect(401, {error: 'Unauthorized request'})
-      })
+
     })
   })
   describe(`GET /api/things`, () => {
